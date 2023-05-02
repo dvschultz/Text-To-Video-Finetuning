@@ -30,7 +30,7 @@ def initialize_pipeline(model, device="cuda", xformers=False, sdp=False):
         unet=unet.to(device=device, dtype=torch.half),
     )
     pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config)
-    unet._set_gradient_checkpointing(value=False)
+    unet.disable_gradient_checkpointing()
     handle_memory_attention(xformers, sdp, unet)
     vae.enable_slicing()
     return pipeline
