@@ -101,6 +101,7 @@ def vid2vid(
 def inference(
     model,
     prompt,
+    seed,
     negative_prompt=None,
     batch_size=1,
     num_frames=16,
@@ -116,6 +117,8 @@ def inference(
     lora_path='',
     lora_rank=64
 ):
+    generator = torch.Generator().manual_seed(seed)
+    
     with torch.autocast(device, dtype=torch.half):
         pipeline = initialize_pipeline(model, device, xformers, sdp)
         inject_inferable_lora(pipeline, lora_path, r=lora_rank)
@@ -132,7 +135,7 @@ def inference(
                 height=height,
                 width=width,
                 num_inference_steps=num_steps,
-                guidance_scale=guidance_scale,
+                guidance_scale=guidance_scale
             )
 
         else:
@@ -145,6 +148,7 @@ def inference(
                 num_inference_steps=num_steps,
                 guidance_scale=guidance_scale,
                 output_type="pt",
+                generator=generator
             ).frames
 
         return videos
@@ -174,6 +178,7 @@ if __name__ == "__main__":
     parser.add_argument("-S", "--sdp", action="store_true")
     parser.add_argument("-lP", "--lora_path", type=str, default="")
     parser.add_argument("-lR", "--lora_rank", type=int, default=64)
+    parser.add_argument("-sd", "--seed", type=int, default=64)
     parser.add_argument("-rw", "--remove-watermark", action="store_true")
     args = vars(parser.parse_args())
 
